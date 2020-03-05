@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -28,24 +29,28 @@ public class MainActivity extends AppCompatActivity {
             day15,day16,day17,day18,day19,day20,day21,day22,day23,day24,day25,day26,day27,day28;*/
     private LinearLayout createTableLinearLayout, tableLinearLayout;
     private TextView pullupsCountTextView, pullupsTitleTextView;
-    private int pullupsCount;
-    private int daysCompleted;
+    private int pullupsCount, thePullupsCount;
+    private int daysCompleted, setsDone;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         String[] readFile;
+    //    readFile = readFromFile(this).split(">>");
 
-            readFile = readFromFile(this).split(">>");
-            if (readFile != null) {
+
+        /*if (readFile.length>1) {
                 Log.d("mylog", "readFile = " + readFile);
                 daysCompleted = Integer.parseInt(readFile[0]);
                 pullupsCount = Integer.parseInt(readFile[0]);
                 Log.d("mylog", "daysCompleted = "+ daysCompleted + "\n" + "pullupsCount = " + pullupsCount);
                 createTrainingTable(daysCompleted);
-                createTable(pullupsCount, daysCompleted);
-            } else {
+                createTable( daysCompleted);
+            } else*/
+
+                {
                 final float[] startx = new float[1];
                 final float[] stopx = new float[1];
                 pullupsCountTextView = findViewById(R.id.pullupsCountTextView);
@@ -86,8 +91,12 @@ public class MainActivity extends AppCompatActivity {
                 createTrainingTableImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        thePullupsCount = pullupsCount;
+                        setsDone = 0;
                         createTrainingTable(0);
-                        createTable(pullupsCount,0);
+                        TextView pullupsTitleTextView = findViewById(R.id.pullupsTitleTextView);
+                        pullupsTitleTextView.setText("Pull-ups. set = " + thePullupsCount);
+
                     }
                 });
 
@@ -125,8 +134,10 @@ public class MainActivity extends AppCompatActivity {
                 new TrainingDay((TextView) findViewById(R.id.day27TextView), false, 27),
                 new TrainingDay((TextView) findViewById(R.id.day28TextView), false, 28),
         };
-        for (int i=0;i<=days.length; i++){
-            if (i<=daysCompleted)  days[i].setDone(true);
+        daysCompleted =  daysQompleted;
+        for (int i=0;i<28; i++){
+            if (i<daysCompleted && daysCompleted>0)  days[i].setDone(true);
+            Log.d("mylog", "day" + i + " isDone = " + days[i].isDone());
         }
         pullupsCountTextView = findViewById(R.id.pullupsCountTextView);
         pullupsCount = Integer.parseInt(pullupsCountTextView.getText().toString());
@@ -137,23 +148,24 @@ public class MainActivity extends AppCompatActivity {
         pullupsTitleTextView = findViewById(R.id.pullupsTitleTextView);
         pullupsTitleTextView.setVisibility(View.VISIBLE);
 
-    }
-
-    private void createTable(int count, int daysQompleted){
         for (int j = 0; j<days.length;j++){
-            days[j].getThisDayTextView().setText(""+count);
-            if (j > daysQompleted){
-                days[j].getThisDayTextView().setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
-            } else {
+            days[j].getThisDayTextView().setText(""+(j+1));
+            if (j <daysCompleted && daysCompleted>0){
                 days[j].getThisDayTextView().setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-
+            } else {
+                days[j].getThisDayTextView().setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
             }
             final int finalJ = j;
             days[j].getThisDayTextView().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("mylog", "click on day");
-                    if (finalJ > 0) {
+                    Log.d("mylog", "click on day"+finalJ);
+                    Intent intent = new Intent(MainActivity.this, TrainingDayActivity.class);
+                    intent.putExtra("count", thePullupsCount);
+                    intent.putExtra("day number", finalJ);
+                    intent.putExtra("setsDone", setsDone);
+                    startActivity(intent);
+                    /*if (finalJ > 0) {
                         if (days[finalJ-1].isDone()) {
                             days[finalJ].getThisDayTextView().setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
                             days[finalJ].getThisDayTextView().setClickable(false);
@@ -168,13 +180,14 @@ public class MainActivity extends AppCompatActivity {
                         days[finalJ].getThisDayTextView().setClickable(false);
                         days[finalJ].setDone(true);
                         daysCompleted++;
-                    }
-
-
+                    }*/
                 }
             });
         }
+
     }
+
+
     private void buildMainScreen(){
        // createTableLinearLayout = findViewById(R.id.createTableLinearLayout);
         createTableLinearLayout.setVisibility(View.VISIBLE);
@@ -229,5 +242,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         writeToFile(this, "" + daysCompleted+ ">>" + pullupsCount);
+        Log.d("mylog", "onDestroy writeToFile() = " + daysCompleted+ ">>" + pullupsCount);
+        Log.d("mylog", "onDestroy readFromFile() = " +  readFromFile(this));
     }
 }
